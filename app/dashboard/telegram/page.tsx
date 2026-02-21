@@ -35,7 +35,7 @@ export default function TelegramIntegrationPage() {
 
             <Grid container spacing={3}>
                 {/* Placeholder for Connected Bots */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Card sx={{ borderRadius: 3 }}>
                         <CardContent>
                             <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -60,7 +60,7 @@ export default function TelegramIntegrationPage() {
                 </Grid>
 
                 {/* Connect New Bot Form */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Paper sx={{ p: 3, borderRadius: 3 }}>
                         <Typography variant="h6" fontWeight="bold" mb={2}>
                             New Bot Setup

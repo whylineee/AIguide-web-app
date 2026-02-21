@@ -21,7 +21,7 @@ export default function DashboardHome() {
 
             <Grid container spacing={3} mb={5}>
                 {stats.map((stat, i) => (
-                    <Grid item xs={12} md={4} key={i}>
+                    <Grid size={{ xs: 12, md: 4 }} key={i}>
                         <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
                             <CardContent sx={{ display: 'flex', alignItems: 'center', p: 3 }}>
                                 <Box sx={{

@@ -61,7 +61,7 @@ export default function AgentDetailsPage() {
 
             <Grid container spacing={4}>
                 {/* Left column: Configuration */}
-                <Grid item xs={12} md={7}>
+                <Grid size={{ xs: 12, md: 7 }}>
                     <Paper sx={{ p: 4, borderRadius: 3 }}>
                         <Typography variant="h6" fontWeight="bold" mb={3}>
                             General Settings
@@ -133,7 +133,7 @@ export default function AgentDetailsPage() {
 
                 {/* Right column: Test Console */}
                 {!isNew && (
-                    <Grid item xs={12} md={5}>
+                    <Grid size={{ xs: 12, md: 5 }}>
                         <Paper sx={{ p: 4, borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
                             <Typography variant="h6" fontWeight="bold" mb={3}>
                                 Test Console
