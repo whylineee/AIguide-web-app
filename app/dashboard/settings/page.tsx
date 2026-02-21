@@ -1,35 +1,96 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Box, Typography, Button, Paper, TextField, Alert, Grid, Switch, FormControlLabel, Divider, CircularProgress, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Button, Paper, TextField, Alert, Grid, Switch, FormControlLabel, CircularProgress, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import PaletteIcon from '@mui/icons-material/Palette';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSettings } from '@/app/contexts/SettingsContext';
+import { createClient } from '@/lib/supabase/client';
 
 export default function SettingsPage() {
     const { t } = useSettings();
-    const [name, setName] = useState('Marko');
-    const [company, setCompany] = useState('AI Innovations');
+    const supabase = createClient();
+
+    const [loading, setLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
     const [saved, setSaved] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+
+    const [email, setEmail] = useState('');
+    const [name, setName] = useState('');
+    const [company, setCompany] = useState('');
 
     // Dashboard Customization State
     const [showActivityLog, setShowActivityLog] = useState(true);
     const [showCharts, setShowCharts] = useState(true);
     const [compactMode, setCompactMode] = useState(false);
 
-    const handleSave = () => {
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            setSaved(true);
-            setTimeout(() => setSaved(false), 3000);
-        }, 1000);
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session?.user) {
+            setEmail(session.user.email || '');
+
+            const { data } = await supabase
+                .from('user_settings')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .single();
+
+            if (data) {
+                setName(data.full_name || '');
+                setCompany(data.company_name || '');
+                setShowActivityLog(data.show_activity_log ?? true);
+                setShowCharts(data.show_charts ?? true);
+                setCompactMode(data.compact_mode ?? false);
+            }
+        }
+        setLoading(false);
     };
 
+    const handleSave = async () => {
+        setIsSaving(true);
+        setErrorMsg('');
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) throw new Error("Not authenticated");
+
+            const payload = {
+                user_id: session.user.id,
+                full_name: name,
+                company_name: company,
+                show_activity_log: showActivityLog,
+                show_charts: showCharts,
+                compact_mode: compactMode,
+                updated_at: new Date().toISOString()
+            };
+
+            const { error: upsertError } = await supabase
+                .from('user_settings')
+                .upsert(payload, { onConflict: 'user_id' });
+
+            if (upsertError) throw upsertError;
+
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
+        } catch (err: any) {
+            setErrorMsg(err.message || "Failed to save settings");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (loading) return <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>;
+
     return (
-        <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+        <Box sx={{ maxWidth: 900, mx: 'auto', pb: 10 }}>
             <Box sx={{ mb: 4 }}>
                 <Typography variant="h3" fontWeight="bold" gutterBottom>
                     Settings & Preferences
@@ -40,6 +101,7 @@ export default function SettingsPage() {
             </Box>
 
             {saved && <Alert severity="success" sx={{ mb: 4, borderRadius: 2 }}>All settings updated successfully! Customizations have been applied.</Alert>}
+            {errorMsg && <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>{errorMsg}</Alert>}
 
             <Grid container spacing={4}>
                 <Grid size={{ xs: 12, md: 7 }}>
@@ -65,7 +127,7 @@ export default function SettingsPage() {
                             <TextField
                                 fullWidth
                                 label="Email Address"
-                                value="marko@example.com"
+                                value={email}
                                 disabled
                                 helperText="Email address cannot be changed right now."
                             />
@@ -119,7 +181,7 @@ export default function SettingsPage() {
                             <Typography variant="body2" color="text.secondary" mb={3}>
                                 Deleting your account will permanently remove all agents, teams, and execution data. This cannot be undone.
                             </Typography>
-                            <Button variant="outlined" color="error">
+                            <Button variant="outlined" color="error" onClick={() => alert("Account deletion not implemented.")}>
                                 Permanently Delete Account
                             </Button>
                         </AccordionDetails>
@@ -142,11 +204,11 @@ export default function SettingsPage() {
                     color="secondary"
                     size="large"
                     onClick={handleSave}
-                    disabled={loading}
-                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                    disabled={isSaving}
+                    startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                     sx={{ px: 4 }}
                 >
-                    Save All Settings
+                    {isSaving ? 'Saving...' : 'Save All Settings'}
                 </Button>
             </Box>
         </Box>

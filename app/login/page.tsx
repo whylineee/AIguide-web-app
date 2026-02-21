@@ -18,16 +18,25 @@ export default function LoginPage() {
     const supabase = createClient();
     const { t } = useSettings();
 
-    const handleOAuthLogin = async (provider: 'google' | 'linkedin_oidc' | 'github') => {
+    const handleOAuthLogin = async (provider: 'google' | 'github') => {
         setLoading(true);
         setError(null);
 
         try {
+            const options: any = {
+                redirectTo: `${window.location.origin}/auth/callback`,
+            };
+
+            if (provider === 'google') {
+                options.queryParams = {
+                    access_type: 'offline',
+                    prompt: 'select_account consent', // Forces the account selection menu
+                };
+            }
+
             const { error } = await supabase.auth.signInWithOAuth({
                 provider,
-                options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
-                },
+                options,
             });
 
             if (error) throw error;
@@ -49,10 +58,9 @@ export default function LoginPage() {
                     password,
                 });
                 if (error) throw error;
-                // document.cookie is no longer needed because Supabase handles its own cookies/session via @supabase/ssr
                 window.location.href = '/dashboard';
             } else {
-                const { error } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
@@ -60,9 +68,14 @@ export default function LoginPage() {
                     },
                 });
                 if (error) throw error;
-                alert("Account created successfully. Please check your email to verify your account.");
-                // After signup, they might need to confirm email before logging in.
-                setLoading(false);
+
+                if (data.session) {
+                    // If session is returned immediately, email confirmation is disabled
+                    window.location.href = '/dashboard';
+                } else {
+                    alert("Registration successful! Please check your email to verify your account.");
+                    setLoading(false);
+                }
             }
         } catch (err: any) {
             setError(err.message || 'Authentication failed');
