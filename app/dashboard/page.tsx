@@ -1,52 +1,97 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Card, CardContent, IconButton, Button, Avatar } from '@mui/material';
+import { Box, Typography, Grid, Paper, Card, CardContent, IconButton, Button, CircularProgress } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import GroupsIcon from '@mui/icons-material/Groups';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
 import { useSettings } from '@/app/contexts/SettingsContext';
 import Link from 'next/link';
-
-const data = [
-    { name: 'Mon', executions: 400 },
-    { name: 'Tue', executions: 300 },
-    { name: 'Wed', executions: 550 },
-    { name: 'Thu', executions: 480 },
-    { name: 'Fri', executions: 700 },
-    { name: 'Sat', executions: 850 },
-    { name: 'Sun', executions: 980 },
-];
-
-const recentActivities = [
-    { id: 1, action: "Workflow 'Daily Summary' completed successfully", time: "2 hours ago", color: "#10b981", type: "workflow" },
-    { id: 2, action: "Agent 'Customer Support' interacted with 45 users", time: "5 hours ago", color: "#8b5cf6", type: "agent" },
-    { id: 3, action: "Team 'Sales Squad' deployed via API", time: "1 day ago", color: "#f59e0b", type: "team" },
-    { id: 4, action: "New agent 'Data Analyzer' created", time: "2 days ago", color: "#3B82F6", type: "system" },
-];
+import { createClient } from '@/lib/supabase/client';
 
 export default function DashboardHome() {
     const { t } = useSettings();
+    const supabase = createClient();
+
     const [mounted, setMounted] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({ agents: 0, teams: 0, workflows: 0, executions: 0 });
+    const [recentActivities, setRecentActivities] = useState<any[]>([]);
 
     useEffect(() => {
-        // eslint-disable-next-line
         setMounted(true);
+        fetchDashboardData();
     }, []);
 
-    const stats = [
-        { title: "Total Agents", value: "8", increase: "+2 this week", icon: <SmartToyIcon sx={{ fontSize: 32, color: '#3B82F6' }} />, gradient: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)" },
-        { title: "Agent Teams", value: "3", increase: "Active Squads", icon: <GroupsIcon sx={{ fontSize: 32, color: '#f59e0b' }} />, gradient: "linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)" },
-        { title: "Active Workflows", value: "12", increase: "+4 this week", icon: <PlayCircleOutlineIcon sx={{ fontSize: 32, color: '#10b981' }} />, gradient: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)" },
-        { title: "Executions", value: "4,260", increase: "+18% this month", icon: <CheckCircleOutlineIcon sx={{ fontSize: 32, color: '#8b5cf6' }} />, gradient: "linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)" },
+    const fetchDashboardData = async () => {
+        setLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session?.user) {
+            // Fetch counts
+            const [agentsRes, teamsRes, workflowsRes, execsRes] = await Promise.all([
+                supabase.from('agents').select('*', { count: 'exact', head: true }),
+                supabase.from('teams').select('*', { count: 'exact', head: true }),
+                supabase.from('workflows').select('*', { count: 'exact', head: true }),
+                supabase.from('executions').select('*', { count: 'exact', head: true })
+            ]);
+
+            setStats({
+                agents: agentsRes.count || 0,
+                teams: teamsRes.count || 0,
+                workflows: workflowsRes.count || 0,
+                executions: execsRes.count || 0
+            });
+
+            // Fetch recent executions
+            const { data: recentExecs } = await supabase
+                .from('executions')
+                .select('*, agents(name), workflows(name)')
+                .order('started_at', { ascending: false })
+                .limit(4);
+
+            if (recentExecs) {
+                const logs = recentExecs.map(exec => {
+                    const itemName = exec.workflows?.name || exec.agents?.name || 'Task';
+                    const isSuccess = exec.status === 'success';
+
+                    return {
+                        id: exec.id,
+                        action: `${isSuccess ? 'Completed' : 'Running'} ${itemName}`,
+                        status: exec.status,
+                        time: new Date(exec.started_at).toLocaleDateString(),
+                        color: isSuccess ? "#10b981" : "#8b5cf6"
+                    };
+                });
+                setRecentActivities(logs);
+            }
+        }
+        setLoading(false);
+    };
+
+    const dummyChartData = [
+        { name: 'Mon', executions: 5 },
+        { name: 'Tue', executions: 8 },
+        { name: 'Wed', executions: Math.max(stats.executions / 2, 4) },
+        { name: 'Thu', executions: Math.max(stats.executions, 2) },
+        { name: 'Fri', executions: stats.executions + 5 },
+        { name: 'Sat', executions: stats.executions + 10 },
+        { name: 'Sun', executions: stats.executions + 2 },
     ];
 
-    if (!mounted) return <Box sx={{ p: 4 }}>Loading...</Box>;
+    const statsCards = [
+        { title: "Total Agents", value: stats.agents, increase: "Your AI workforce", icon: <SmartToyIcon sx={{ fontSize: 32, color: '#3B82F6' }} />, gradient: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)" },
+        { title: "Agent Teams", value: stats.teams, increase: "Active Squads", icon: <GroupsIcon sx={{ fontSize: 32, color: '#f59e0b' }} />, gradient: "linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)" },
+        { title: "Workflows", value: stats.workflows, increase: "Scheduled Tasks", icon: <PlayCircleOutlineIcon sx={{ fontSize: 32, color: '#10b981' }} />, gradient: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)" },
+        { title: "Executions", value: stats.executions, increase: "Total runs", icon: <CheckCircleOutlineIcon sx={{ fontSize: 32, color: '#8b5cf6' }} />, gradient: "linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)" },
+    ];
+
+    if (!mounted || loading) return <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>;
 
     return (
         <Box>
@@ -62,7 +107,7 @@ export default function DashboardHome() {
             </Box>
 
             <Grid container spacing={3} mb={4}>
-                {stats.map((stat, i) => (
+                {statsCards.map((stat, i) => (
                     <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -90,8 +135,7 @@ export default function DashboardHome() {
                                     <Typography variant="body2" color="text.secondary" fontWeight="600" sx={{ textTransform: 'uppercase', letterSpacing: 1, mb: 1 }}>
                                         {stat.title}
                                     </Typography>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', color: stat.title === 'Executions' ? '#10b981' : 'text.disabled' }}>
-                                        <TrendingUpIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
                                         <Typography variant="caption" fontWeight="500">{stat.increase}</Typography>
                                     </Box>
                                 </CardContent>
@@ -116,7 +160,7 @@ export default function DashboardHome() {
                                 </Typography>
                                 <Box sx={{ width: '100%', height: 300 }}>
                                     <ResponsiveContainer>
-                                        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                        <AreaChart data={dummyChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorEx" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.4} />
@@ -150,24 +194,28 @@ export default function DashboardHome() {
                                 <Typography variant="h6" fontWeight="bold" mb={3}>
                                     Recent Activity
                                 </Typography>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                    {recentActivities.map((activity) => (
-                                        <Box key={activity.id} sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                                            <Box sx={{
-                                                width: 12, height: 12, borderRadius: '50%', bgcolor: activity.color, mt: 0.75, mr: 2, flexShrink: 0,
-                                                boxShadow: `0 0 10px ${activity.color}`
-                                            }} />
-                                            <Box>
-                                                <Typography variant="body2" fontWeight="500" sx={{ mb: 0.5 }}>
-                                                    {activity.action}
-                                                </Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {activity.time}
-                                                </Typography>
+                                {recentActivities.length === 0 ? (
+                                    <Typography color="text.secondary">No recent executions found.</Typography>
+                                ) : (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                        {recentActivities.map((activity) => (
+                                            <Box key={activity.id} sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                                                <Box sx={{
+                                                    width: 12, height: 12, borderRadius: '50%', bgcolor: activity.color, mt: 0.75, mr: 2, flexShrink: 0,
+                                                    boxShadow: `0 0 10px ${activity.color}`
+                                                }} />
+                                                <Box>
+                                                    <Typography variant="body2" fontWeight="500" sx={{ mb: 0.5 }}>
+                                                        {activity.action}
+                                                    </Typography>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        {activity.time} • {activity.status}
+                                                    </Typography>
+                                                </Box>
                                             </Box>
-                                        </Box>
-                                    ))}
-                                </Box>
+                                        ))}
+                                    </Box>
+                                )}
                                 <Link href="/dashboard/logs" passHref legacyBehavior>
                                     <Button fullWidth sx={{ mt: 4, borderRadius: 2 }} color="inherit">
                                         View All Logs

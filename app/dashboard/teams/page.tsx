@@ -1,31 +1,87 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Box, Typography, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, Avatar, AvatarGroup, Modal, TextField, MenuItem } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, Avatar, AvatarGroup, Modal, TextField, MenuItem, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import CloseIcon from '@mui/icons-material/Close';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { motion } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
 
 export default function TeamsPage() {
+    const supabase = createClient();
     const [openDialog, setOpenDialog] = useState(false);
+    const [teams, setTeams] = useState<any[]>([]);
+    const [availableAgents, setAvailableAgents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isCreating, setIsCreating] = useState(false);
 
-    const teams = [
-        { id: '1', name: 'Alpha Sales Squad', status: 'active', agents: ['Lead Gen Bot', 'Email Outreach', 'CRM Updater'], goal: 'Maximize outbound reach' },
-        { id: '2', name: 'Tier 1 Support', status: 'active', agents: ['Ticketing AI', 'Sentiment Analyzer'], goal: 'Resolve 80% of L1 tickets automatically' },
-        { id: '3', name: 'Data Pipeline', status: 'training', agents: ['Data Scraper', 'JSON Formatter'], goal: 'Daily web data extraction' },
-    ];
+    // Form
+    const [newTeamName, setNewTeamName] = useState('');
+    const [newTeamGoal, setNewTeamGoal] = useState('');
+    const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+            const [teamsRes, agentsRes] = await Promise.all([
+                supabase.from('teams').select('*').order('created_at', { ascending: false }),
+                supabase.from('agents').select('*')
+            ]);
+
+            if (teamsRes.data) setTeams(teamsRes.data);
+            if (agentsRes.data) setAvailableAgents(agentsRes.data);
+        }
+        setLoading(false);
+    };
+
+    const handleCreateTeam = async () => {
+        if (!newTeamName.trim()) return;
+        setIsCreating(true);
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+            const { error } = await supabase.from('teams').insert({
+                user_id: session.user.id,
+                name: newTeamName,
+                goal: newTeamGoal,
+                agents: selectedAgents,
+                status: 'active'
+            });
+
+            if (!error) {
+                setOpenDialog(false);
+                setNewTeamName('');
+                setNewTeamGoal('');
+                setSelectedAgents([]);
+                fetchData();
+            }
+        }
+        setIsCreating(false);
+    };
+
+    const handleDelete = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to disband squad: ${name}?`)) return;
+
+        await supabase.from('teams').delete().eq('id', id);
+        fetchData();
+    };
+
+    if (loading) return <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>;
 
     return (
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                 <Typography variant="h4" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     Agent Teams
-                    <Chip label="BETA" color="secondary" size="small" sx={{ ml: 1, fontWeight: 'bold' }} />
                 </Typography>
                 <Button
                     variant="contained"
@@ -42,56 +98,60 @@ export default function TeamsPage() {
                 Combine multiple AI agents into specialized squads. They will share context, collaborate on complex workflows, and execute tasks iteratively until the objective is completed.
             </Typography>
 
-            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: 'transparent' }}>
-                <Table>
-                    <TableHead sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
-                        <TableRow>
-                            <TableCell><strong>Squad Name</strong></TableCell>
-                            <TableCell><strong>Objective / Goal</strong></TableCell>
-                            <TableCell><strong>Agents Assigned</strong></TableCell>
-                            <TableCell><strong>Status</strong></TableCell>
-                            <TableCell align="right"><strong>Actions</strong></TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {teams.map((team, idx) => (
-                            <TableRow key={team.id} hover component={motion.tr} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }}>
-                                <TableCell sx={{ fontWeight: 600 }}>{team.name}</TableCell>
-                                <TableCell sx={{ color: 'text.secondary', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {team.goal}
-                                </TableCell>
-                                <TableCell>
-                                    <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 32, height: 32, fontSize: '0.875rem', bgcolor: '#3B82F6' } }}>
-                                        {team.agents.map((agent) => (
-                                            <Avatar key={agent} alt={agent} title={agent}><SmartToyIcon fontSize="small" /></Avatar>
-                                        ))}
-                                    </AvatarGroup>
-                                </TableCell>
-                                <TableCell>
-                                    <Chip
-                                        size="small"
-                                        label={team.status}
-                                        color={team.status === 'active' ? 'success' : 'warning'}
-                                        variant="filled"
-                                        sx={{ textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: 1, fontSize: '0.7rem' }}
-                                    />
-                                </TableCell>
-                                <TableCell align="right">
-                                    <IconButton size="small" color="primary" title="Deploy Squad" onClick={() => alert("Deploy Squad: " + team.name)}>
-                                        <PlayArrowIcon />
-                                    </IconButton>
-                                    <IconButton size="small" title="Edit Configuration" onClick={() => alert("Edit Squad: " + team.name)}>
-                                        <EditIcon />
-                                    </IconButton>
-                                    <IconButton size="small" color="error" title="Disband Squad" onClick={() => alert("Disband Squad: " + team.name)}>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </TableCell>
+            {teams.length === 0 ? (
+                <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
+                    <Typography color="text.secondary">No teams found. Assemble your first squad!</Typography>
+                </Paper>
+            ) : (
+                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: 'transparent' }}>
+                    <Table>
+                        <TableHead sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
+                            <TableRow>
+                                <TableCell><strong>Squad Name</strong></TableCell>
+                                <TableCell><strong>Objective / Goal</strong></TableCell>
+                                <TableCell><strong>Agents Assigned</strong></TableCell>
+                                <TableCell><strong>Status</strong></TableCell>
+                                <TableCell align="right"><strong>Actions</strong></TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                            {teams.map((team, idx) => (
+                                <TableRow key={team.id} hover component={motion.tr} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }}>
+                                    <TableCell sx={{ fontWeight: 600 }}>{team.name}</TableCell>
+                                    <TableCell sx={{ color: 'text.secondary', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {team.goal}
+                                    </TableCell>
+                                    <TableCell>
+                                        <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 32, height: 32, fontSize: '0.875rem', bgcolor: '#3B82F6' } }}>
+                                            {team.agents?.map((agentId: string) => {
+                                                const agentName = availableAgents.find(a => a.id === agentId)?.name || 'Agent';
+                                                return <Avatar key={agentId} alt={agentName} title={agentName}><SmartToyIcon fontSize="small" /></Avatar>;
+                                            })}
+                                        </AvatarGroup>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            size="small"
+                                            label={team.status}
+                                            color={team.status === 'active' ? 'success' : 'warning'}
+                                            variant="filled"
+                                            sx={{ textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: 1, fontSize: '0.7rem' }}
+                                        />
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <IconButton size="small" color="primary" title="Deploy Squad" onClick={() => alert("Deploying " + team.name)}>
+                                            <PlayArrowIcon />
+                                        </IconButton>
+                                        <IconButton size="small" color="error" title="Disband Squad" onClick={() => handleDelete(team.id, team.name)}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
 
             <Modal open={openDialog} onClose={() => setOpenDialog(false)}>
                 <Box sx={{
@@ -103,26 +163,48 @@ export default function TeamsPage() {
                         <Typography variant="h5" fontWeight="bold">New Agent Squad</Typography>
                         <IconButton onClick={() => setOpenDialog(false)}><CloseIcon /></IconButton>
                     </Box>
-                    <Typography color="text.secondary" mb={3}>Select multiple agents and define a unified objective for them to collaborate on.</Typography>
 
                     <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <TextField fullWidth label="Squad Name" placeholder="e.g. Marketing Task Force" />
-                        <TextField fullWidth label="Primary Objective" multiline rows={3} placeholder="Describe the goal this team should achieve..." />
+                        <TextField
+                            fullWidth
+                            label="Squad Name"
+                            value={newTeamName}
+                            onChange={(e) => setNewTeamName(e.target.value)}
+                            placeholder="e.g. Marketing Task Force"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Primary Objective"
+                            multiline
+                            rows={3}
+                            value={newTeamGoal}
+                            onChange={(e) => setNewTeamGoal(e.target.value)}
+                            placeholder="Describe the goal this team should achieve..."
+                        />
 
                         <TextField
                             select
                             fullWidth
-                            label="Select Agents (Mock)"
-                            defaultValue="1"
-                            helperText="Hold CTRL/CMD to select multiple in a real implementation"
+                            label="Select Agents"
+                            value={selectedAgents}
+                            onChange={(e) => setSelectedAgents(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value as string[])}
+                            SelectProps={{ multiple: true }}
+                            helperText="Select one or more agents"
                         >
-                            <MenuItem value="1">Customer Support Bot</MenuItem>
-                            <MenuItem value="2">Data Analyzer</MenuItem>
-                            <MenuItem value="3">Email Assistant</MenuItem>
+                            {availableAgents.map((agent) => (
+                                <MenuItem key={agent.id} value={agent.id}>{agent.name}</MenuItem>
+                            ))}
+                            {availableAgents.length === 0 && <MenuItem disabled>No agents found</MenuItem>}
                         </TextField>
 
-                        <Button variant="contained" size="large" onClick={() => setOpenDialog(false)} sx={{ mt: 2, background: 'linear-gradient(45deg, #7C3AED 30%, #5B21B6 90%)' }}>
-                            Assemble Team
+                        <Button
+                            variant="contained"
+                            size="large"
+                            onClick={handleCreateTeam}
+                            disabled={!newTeamName || isCreating}
+                            sx={{ mt: 2, background: 'linear-gradient(45deg, #7C3AED 30%, #5B21B6 90%)' }}
+                        >
+                            {isCreating ? 'Assembling...' : 'Assemble Team'}
                         </Button>
                     </Box>
                 </Box>
