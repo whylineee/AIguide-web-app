@@ -25,4 +25,8 @@ async function handler(request: Request) {
 }
 
 // Ensure the request actually comes from Upstash QStash
-export const POST = verifySignatureAppRouter(handler);
+// Provide dummy keys during build step to prevent Vercel crashes
+export const POST = verifySignatureAppRouter(handler, {
+    currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY || 'dummy-current',
+    nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY || 'dummy-next',
+});
