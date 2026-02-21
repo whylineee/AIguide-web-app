@@ -35,6 +35,7 @@ export default function DashboardHome() {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line
         setMounted(true);
     }, []);
 
@@ -167,9 +168,11 @@ export default function DashboardHome() {
                                         </Box>
                                     ))}
                                 </Box>
-                                <Button fullWidth sx={{ mt: 4, borderRadius: 2 }} color="inherit">
-                                    View All Logs
-                                </Button>
+                                <Link href="/dashboard/logs" passHref legacyBehavior>
+                                    <Button fullWidth sx={{ mt: 4, borderRadius: 2 }} color="inherit">
+                                        View All Logs
+                                    </Button>
+                                </Link>
                             </CardContent>
                         </Card>
                     </motion.div>

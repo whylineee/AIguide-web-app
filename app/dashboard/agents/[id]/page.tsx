@@ -54,7 +54,7 @@ export default function AgentDetailsPage() {
                     {isNew ? 'Create New Agent' : 'Agent Configuration'}
                 </Typography>
                 <Box sx={{ flexGrow: 1 }} />
-                <Button variant="contained" color="primary" startIcon={<SaveIcon />}>
+                <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={() => alert('Agent saved!')}>
                     Save Agent
                 </Button>
             </Box>

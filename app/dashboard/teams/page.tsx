@@ -77,13 +77,13 @@ export default function TeamsPage() {
                                     />
                                 </TableCell>
                                 <TableCell align="right">
-                                    <IconButton size="small" color="primary" title="Deploy Squad">
+                                    <IconButton size="small" color="primary" title="Deploy Squad" onClick={() => alert("Deploy Squad: " + team.name)}>
                                         <PlayArrowIcon />
                                     </IconButton>
-                                    <IconButton size="small" title="Edit Configuration">
+                                    <IconButton size="small" title="Edit Configuration" onClick={() => alert("Edit Squad: " + team.name)}>
                                         <EditIcon />
                                     </IconButton>
-                                    <IconButton size="small" color="error" title="Disband Squad">
+                                    <IconButton size="small" color="error" title="Disband Squad" onClick={() => alert("Disband Squad: " + team.name)}>
                                         <DeleteIcon />
                                     </IconButton>
                                 </TableCell>

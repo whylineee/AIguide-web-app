@@ -31,6 +31,7 @@ export default function WorkflowsPage() {
                     variant="contained"
                     color="primary"
                     startIcon={<AddIcon />}
+                    onClick={() => alert("Create Workflow coming soon")}
                 >
                     Create Workflow
                 </Button>
@@ -66,10 +67,10 @@ export default function WorkflowsPage() {
                                     <IconButton size="small" color="primary" title="Run Now" onClick={() => handleRun(workflow.name)}>
                                         <PlayArrowIcon />
                                     </IconButton>
-                                    <IconButton size="small" title="Edit">
+                                    <IconButton size="small" title="Edit" onClick={() => alert("Edit Workflow: " + workflow.name)}>
                                         <EditIcon />
                                     </IconButton>
-                                    <IconButton size="small" color="error" title="Delete">
+                                    <IconButton size="small" color="error" title="Delete" onClick={() => alert("Delete Workflow: " + workflow.name)}>
                                         <DeleteIcon />
                                     </IconButton>
                                 </TableCell>

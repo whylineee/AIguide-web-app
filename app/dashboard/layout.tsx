@@ -66,7 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { text: t.common.settings, icon: <SettingsIcon />, path: '/dashboard/settings' },
     ];
 
-    const renderNavGroup = (items: any[], label: string) => (
+    const renderNavGroup = (items: { text: string; icon: React.ReactNode; path: string }[], label: string) => (
         <Box sx={{ mb: 2 }}>
             <Typography variant="overline" color="text.secondary" sx={{ px: 3, fontWeight: 'bold', letterSpacing: 1 }}>
                 {label}

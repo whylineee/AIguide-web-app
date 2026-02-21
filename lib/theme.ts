@@ -1,4 +1,4 @@
-import { createTheme, alpha } from '@mui/material/styles';
+import { createTheme, alpha, Theme } from '@mui/material/styles';
 
 const getDesignTokens = (mode: 'light' | 'dark') => ({
     palette: {
@@ -77,7 +77,7 @@ const getDesignTokens = (mode: 'light' | 'dark') => ({
     components: {
         MuiButton: {
             styleOverrides: {
-                root: ({ theme }: any) => ({
+                root: ({ theme }: { theme: Theme }) => ({
                     borderRadius: '9999px', // Pill shape
                     padding: '8px 24px',
                     boxShadow: 'none',
@@ -94,7 +94,7 @@ const getDesignTokens = (mode: 'light' | 'dark') => ({
                         transform: 'translateY(1px)',
                     }
                 }),
-                containedPrimary: ({ theme }: any) => ({
+                containedPrimary: ({ theme }: { theme: Theme }) => ({
                     background: theme.palette.mode === 'dark' ? '#fff' : '#000',
                     color: theme.palette.mode === 'dark' ? '#000' : '#fff',
                     '&:hover': {
@@ -105,7 +105,7 @@ const getDesignTokens = (mode: 'light' | 'dark') => ({
         },
         MuiPaper: {
             styleOverrides: {
-                root: ({ theme }: any) => ({
+                root: ({ theme }: { theme: Theme }) => ({
                     backgroundImage: 'none',
                     border: `1px solid ${theme.palette.divider}`,
                     boxShadow: theme.palette.mode === 'dark'
@@ -120,7 +120,7 @@ const getDesignTokens = (mode: 'light' | 'dark') => ({
         },
         MuiCard: {
             styleOverrides: {
-                root: ({ theme }: any) => ({
+                root: ({ theme }: { theme: Theme }) => ({
                     borderRadius: '24px',
                     backgroundImage: 'none',
                     overflow: 'visible', // for glow effects
@@ -129,7 +129,7 @@ const getDesignTokens = (mode: 'light' | 'dark') => ({
         },
         MuiDrawer: {
             styleOverrides: {
-                paper: ({ theme }: any) => ({
+                paper: ({ theme }: { theme: Theme }) => ({
                     borderRight: `1px solid ${theme.palette.divider}`,
                     background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)',
                     backdropFilter: 'blur(20px)',
@@ -138,7 +138,7 @@ const getDesignTokens = (mode: 'light' | 'dark') => ({
         },
         MuiAppBar: {
             styleOverrides: {
-                root: ({ theme }: any) => ({
+                root: ({ theme }: { theme: Theme }) => ({
                     background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)',
                     backdropFilter: 'blur(20px)',
                     borderBottom: `1px solid ${theme.palette.divider}`,
@@ -155,7 +155,7 @@ const getDesignTokens = (mode: 'light' | 'dark') => ({
         },
         MuiOutlinedInput: {
             styleOverrides: {
-                root: ({ theme }: any) => ({
+                root: ({ theme }: { theme: Theme }) => ({
                     borderRadius: '12px',
                     transition: 'all 0.2s ease',
                     background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'transparent',
