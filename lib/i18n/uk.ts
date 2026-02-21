@@ -1,9 +1,13 @@
 export const uk = {
     common: {
-        dashboard: "Дешборд",
+        dashboard: "Огляд",
         agents: "ШІ Агенти",
+        teams: "Команди Агентів",
         workflows: "Воркфлоу",
         telegram: "Telegram",
+        apikeys: "API Ключі",
+        logs: "Журнал Дій",
+        billing: "Тарифи та Використання",
         settings: "Налаштування",
         logout: "Вийти",
         create: "Створити",

@@ -1,11 +1,15 @@
 export const en = {
     common: {
-        dashboard: "Dashboard",
+        dashboard: "Overview",
         agents: "AI Agents",
+        teams: "Agent Squads",
         workflows: "Workflows",
         telegram: "Telegram",
+        apikeys: "API Keys",
+        logs: "Execution Logs",
+        billing: "Billing & Usage",
         settings: "Settings",
-        logout: "Log out",
+        logout: "Log Out",
         create: "Create",
         save: "Save",
         cancel: "Cancel",

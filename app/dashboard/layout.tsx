@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
+import GroupsIcon from '@mui/icons-material/Groups';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -40,6 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const navItems = [
         { text: t.common.dashboard, icon: <DashboardIcon />, path: '/dashboard' },
         { text: t.common.agents, icon: <SmartToyIcon />, path: '/dashboard/agents' },
+        { text: t.common.teams, icon: <GroupsIcon />, path: '/dashboard/teams' },
         { text: t.common.workflows, icon: <AccountTreeIcon />, path: '/dashboard/workflows' },
         { text: t.common.telegram, icon: <TelegramIcon />, path: '/dashboard/telegram' },
         { text: t.common.settings, icon: <SettingsIcon />, path: '/dashboard/settings' },
