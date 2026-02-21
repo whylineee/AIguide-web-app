@@ -20,6 +20,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import SettingsIcon from '@mui/icons-material/Settings';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SettingsToggle } from '@/components/SettingsToggle';
@@ -41,6 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { text: t.common.agents, icon: <SmartToyIcon />, path: '/dashboard/agents' },
         { text: t.common.workflows, icon: <AccountTreeIcon />, path: '/dashboard/workflows' },
         { text: t.common.telegram, icon: <TelegramIcon />, path: '/dashboard/telegram' },
+        { text: t.common.settings, icon: <SettingsIcon />, path: '/dashboard/settings' },
     ];
 
     const drawer = (

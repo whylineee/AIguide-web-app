@@ -1,95 +1,74 @@
-"use client"
+"use client";
 
 import React, { useState } from 'react';
-import {
-    Box,
-    Typography,
-    Button,
-    TextField,
-    Paper,
-    Grid,
-    Card,
-    CardContent,
-    CardActions
-} from '@mui/material';
+import { Box, Typography, Button, Paper, TextField, Alert, Switch, FormControlLabel } from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
 import TelegramIcon from '@mui/icons-material/Telegram';
-import LinkIcon from '@mui/icons-material/Link';
 
 export default function TelegramIntegrationPage() {
-    const [botToken, setBotToken] = useState('');
+    const [botToken, setBotToken] = useState('1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    const [webhookUrl, setWebhookUrl] = useState('https://yoursite.vercel.app/api/telegram/webhook');
+    const [autoReply, setAutoReply] = useState(true);
+    const [saved, setSaved] = useState(false);
+
+    const handleSave = () => {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+    };
 
     return (
-        <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+                <TelegramIcon sx={{ fontSize: 40, mr: 2, color: '#0088cc' }} />
                 <Typography variant="h4" fontWeight="bold">
-                    Telegram Bots
+                    Telegram Integration
                 </Typography>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<TelegramIcon />}
-                >
-                    Connect Bot
-                </Button>
             </Box>
 
-            <Grid container spacing={3}>
-                {/* Placeholder for Connected Bots */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                    <Card sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            <Typography variant="h6" fontWeight="bold" gutterBottom>
-                                LeadGen Bot
-                            </Typography>
-                            <Typography color="text.secondary" variant="body2" mb={2}>
-                                @LeadGenAwesome_bot
-                            </Typography>
-                            <Typography variant="body2">
-                                Status: <strong>Active Webhook</strong>
-                            </Typography>
-                            <Typography variant="body2" sx={{ mt: 1 }}>
-                                Agent Linked: Customer Support Bot
-                            </Typography>
-                        </CardContent>
-                        <CardActions sx={{ borderTop: 1, borderColor: 'divider' }}>
-                            <Button size="small" color="error">
-                                Disconnect
-                            </Button>
-                        </CardActions>
-                    </Card>
-                </Grid>
+            <Paper sx={{ p: 4, borderRadius: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                    Bot Configuration
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                    Connect your Telegram bot to automatically route messages to your AI agents or trigger workflows.
+                </Typography>
 
-                {/* Connect New Bot Form */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                    <Paper sx={{ p: 3, borderRadius: 3 }}>
-                        <Typography variant="h6" fontWeight="bold" mb={2}>
-                            New Bot Setup
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" mb={3}>
-                            Enter your Telegram Bot Token provided by @BotFather to link it to your AI Agents.
-                        </Typography>
+                {saved && <Alert severity="success" sx={{ mb: 3 }}>Settings saved successfully!</Alert>}
 
-                        <TextField
-                            fullWidth
-                            label="Bot Token"
-                            variant="outlined"
-                            placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-                            value={botToken}
-                            onChange={(e) => setBotToken(e.target.value)}
-                            sx={{ mb: 3 }}
-                        />
+                <Box component="form" sx={{ display: 'grid', gap: 3 }}>
+                    <TextField
+                        fullWidth
+                        label="Telegram Bot Token"
+                        value={botToken}
+                        onChange={(e) => setBotToken(e.target.value)}
+                        helperText="Get this from @BotFather on Telegram"
+                    />
 
-                        <Button
-                            variant="outlined"
-                            fullWidth
-                            startIcon={<LinkIcon />}
-                            disabled={!botToken}
-                        >
-                            Verify & Save
-                        </Button>
-                    </Paper>
-                </Grid>
-            </Grid>
+                    <TextField
+                        fullWidth
+                        label="Webhook URL"
+                        value={webhookUrl}
+                        onChange={(e) => setWebhookUrl(e.target.value)}
+                        helperText="Provide this URL to Telegram so they can push events to your app"
+                        disabled // System generated usually
+                    />
+
+                    <FormControlLabel
+                        control={<Switch checked={autoReply} onChange={(e) => setAutoReply(e.target.checked)} color="primary" />}
+                        label="Auto-reply to all messages using Default Agent"
+                    />
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<SaveIcon />}
+                        onClick={handleSave}
+                        sx={{ mt: 2, justifySelf: 'start' }}
+                    >
+                        Save Configuration
+                    </Button>
+                </Box>
+            </Paper>
         </Box>
     );
 }

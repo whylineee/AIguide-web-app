@@ -32,15 +32,15 @@ export default async function AgentsPage() {
                 <Typography variant="h4" fontWeight="bold">
                     AI Agents
                 </Typography>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddIcon />}
-                    component={Link}
-                    href="/dashboard/agents/new"
-                >
-                    Create Agent
-                </Button>
+                <Link href="/dashboard/agents/new" passHref legacyBehavior>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<AddIcon />}
+                    >
+                        Create Agent
+                    </Button>
+                </Link>
             </Box>
 
             {(!agents || agents.length === 0) ? (
@@ -51,9 +51,11 @@ export default async function AgentsPage() {
                     <Typography variant="body2" color="text.secondary" mb={3}>
                         Create your first intelligent agent to automate your tasks.
                     </Typography>
-                    <Button component={Link} href="/dashboard/agents/new" variant="outlined" color="primary">
-                        Create First Agent
-                    </Button>
+                    <Link href="/dashboard/agents/new" passHref legacyBehavior>
+                        <Button variant="outlined" color="primary">
+                            Create First Agent
+                        </Button>
+                    </Link>
                 </Card>
             ) : (
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}>
@@ -93,13 +95,17 @@ export default async function AgentsPage() {
                                     </Typography>
                                 </CardContent>
                                 <CardActions sx={{ borderTop: 1, borderColor: 'divider', px: 2, py: 1 }}>
-                                    <Button size="small" startIcon={<PlayArrowIcon />} component={Link} href={`/dashboard/agents/${agent.id}`}>
-                                        Test Run
-                                    </Button>
+                                    <Link href={`/dashboard/agents/${agent.id}`} passHref legacyBehavior>
+                                        <Button size="small" startIcon={<PlayArrowIcon />}>
+                                            Test Run
+                                        </Button>
+                                    </Link>
                                     <Box sx={{ flexGrow: 1 }} />
-                                    <IconButton size="small" title="Settings" component={Link} href={`/dashboard/agents/${agent.id}`}>
-                                        <SettingsIcon fontSize="small" />
-                                    </IconButton>
+                                    <Link href={`/dashboard/agents/${agent.id}`} passHref legacyBehavior>
+                                        <IconButton size="small" title="Settings">
+                                            <SettingsIcon fontSize="small" />
+                                        </IconButton>
+                                    </Link>
                                 </CardActions>
                             </Card>
                         </Box>
