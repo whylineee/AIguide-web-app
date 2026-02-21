@@ -22,11 +22,19 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
 
-        // Mock Auth
-        setTimeout(() => {
-            document.cookie = "test_auth=true; path=/;";
-            window.location.href = '/dashboard';
-        }, 1000);
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider,
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                },
+            });
+
+            if (error) throw error;
+        } catch (err: any) {
+            setError(err.message || 'OAuth login failed');
+            setLoading(false);
+        }
     };
 
     const handleEmailAuth = async (e: React.FormEvent) => {
@@ -34,14 +42,32 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
 
-        // Mock Auth
-        setTimeout(() => {
-            if (!isLogin) {
-                alert("Account created successfully. You are now logged in with test account.");
+        try {
+            if (isLogin) {
+                const { error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+                if (error) throw error;
+                // document.cookie is no longer needed because Supabase handles its own cookies/session via @supabase/ssr
+                window.location.href = '/dashboard';
+            } else {
+                const { error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        emailRedirectTo: `${window.location.origin}/auth/callback`,
+                    },
+                });
+                if (error) throw error;
+                alert("Account created successfully. Please check your email to verify your account.");
+                // After signup, they might need to confirm email before logging in.
+                setLoading(false);
             }
-            document.cookie = "test_auth=true; path=/;";
-            window.location.href = '/dashboard';
-        }, 1000);
+        } catch (err: any) {
+            setError(err.message || 'Authentication failed');
+            setLoading(false);
+        }
     };
 
     return (
