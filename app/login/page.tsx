@@ -6,6 +6,8 @@ import GoogleIcon from '@mui/icons-material/Google';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { createClient } from '@/lib/supabase/client';
+import { useSettings } from '@/app/contexts/SettingsContext';
+import { SettingsToggle } from '@/components/SettingsToggle';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -13,6 +15,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const supabase = createClient();
+    const { t } = useSettings();
 
     const handleOAuthLogin = async (provider: 'google' | 'linkedin_oidc' | 'github') => {
         setLoading(true);
@@ -50,12 +53,14 @@ export default function LoginPage() {
 
     return (
         <Grid container component="main" sx={{ height: '100vh', bgcolor: 'background.default' }}>
+            {/* Settings Toggle floating top-right */}
+            <Box sx={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
+                <SettingsToggle />
+            </Box>
+
             {/* Left side styling / Graphics */}
             <Grid
-                item
-                xs={false}
-                sm={4}
-                md={7}
+                size={{ sm: 4, md: 7 }}
                 sx={{
                     background: 'linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)',
                     display: 'flex',
@@ -76,16 +81,16 @@ export default function LoginPage() {
                 }} />
                 <Box sx={{ textAlign: 'center', color: '#fff', zIndex: 1, maxWidth: 600 }}>
                     <Typography variant="h2" fontWeight="800" gutterBottom sx={{ textShadow: '0px 4px 12px rgba(0,0,0,0.2)' }}>
-                        Build AI Agents. Automate Workflows.
+                        {t.auth.heroTitle}
                     </Typography>
                     <Typography variant="h6" fontWeight="400" sx={{ opacity: 0.9 }}>
-                        The ultimate premium SaaS control panel designed for managing everything seamlessly with Supabase & Next.js.
+                        {t.auth.heroSubtitle}
                     </Typography>
                 </Box>
             </Grid>
 
             {/* Right side form */}
-            <Grid item xs={12} sm={8} md={5} component={Box} sx={{
+            <Grid size={{ xs: 12, sm: 8, md: 5 }} component={Box} sx={{
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center', p: 4
@@ -101,10 +106,10 @@ export default function LoginPage() {
                     border: 'none',
                 }}>
                     <Typography component="h1" variant="h4" fontWeight="bold" gutterBottom>
-                        Welcome Back
+                        {t.auth.welcome}
                     </Typography>
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 4, textAlign: 'center' }}>
-                        Sign in to access your Agent Dashboard
+                        {t.auth.signInToAccess}
                     </Typography>
 
                     {error && <Alert severity="error" sx={{ width: '100%', mb: 3 }}>{error}</Alert>}
@@ -118,7 +123,7 @@ export default function LoginPage() {
                         disabled={loading}
                         sx={{ mb: 2, justifyContent: 'flex-start', px: 3, py: 1.5, borderColor: 'rgba(255,255,255,0.2)', color: 'text.primary' }}
                     >
-                        Continue with Google
+                        {t.auth.continueWith} Google
                     </Button>
 
                     <Button
@@ -130,7 +135,7 @@ export default function LoginPage() {
                         disabled={loading}
                         sx={{ mb: 2, justifyContent: 'flex-start', px: 3, py: 1.5, borderColor: 'rgba(255,255,255,0.2)', color: 'text.primary' }}
                     >
-                        Continue with LinkedIn
+                        {t.auth.continueWith} LinkedIn
                     </Button>
 
                     <Button
@@ -142,10 +147,10 @@ export default function LoginPage() {
                         disabled={loading}
                         sx={{ mb: 3, justifyContent: 'flex-start', px: 3, py: 1.5, borderColor: 'rgba(255,255,255,0.2)', color: 'text.primary' }}
                     >
-                        Continue with GitHub
+                        {t.auth.continueWith} GitHub
                     </Button>
 
-                    <Divider sx={{ width: '100%', mb: 3, typography: 'body2', color: 'text.secondary' }}>OR</Divider>
+                    <Divider sx={{ width: '100%', mb: 3, typography: 'body2', color: 'text.secondary' }}>{t.auth.or}</Divider>
 
                     <Box component="form" onSubmit={handleEmailLogin} sx={{ width: '100%' }}>
                         <TextField
@@ -153,7 +158,7 @@ export default function LoginPage() {
                             required
                             fullWidth
                             id="email"
-                            label="Email Address"
+                            label={t.auth.email}
                             name="email"
                             autoComplete="email"
                             value={email}
@@ -165,7 +170,7 @@ export default function LoginPage() {
                             required
                             fullWidth
                             name="password"
-                            label="Password"
+                            label={t.auth.password}
                             type="password"
                             id="password"
                             autoComplete="current-password"
@@ -182,7 +187,7 @@ export default function LoginPage() {
                             disabled={loading}
                             sx={{ mt: 4, mb: 2, py: 1.5, background: 'linear-gradient(45deg, #7C3AED 30%, #5B21B6 90%)', border: 0 }}
                         >
-                            {loading ? <CircularProgress size={24} color="inherit" /> : 'Log In & Start Building'}
+                            {loading ? <CircularProgress size={24} color="inherit" /> : t.auth.loginBtn}
                         </Button>
                     </Box>
                 </Paper>

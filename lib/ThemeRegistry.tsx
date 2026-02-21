@@ -6,7 +6,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import createCache from '@emotion/cache';
 import { useServerInsertedHTML } from 'next/navigation';
 import { CacheProvider } from '@emotion/react';
-import theme from './theme';
+
+import { SettingsProvider } from '@/app/contexts/SettingsContext';
 
 export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
     const [{ cache, flush }] = React.useState(() => {
@@ -51,10 +52,9 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
 
     return (
         <CacheProvider value={cache}>
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
+            <SettingsProvider>
                 {children}
-            </ThemeProvider>
+            </SettingsProvider>
         </CacheProvider>
     );
 }

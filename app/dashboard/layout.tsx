@@ -22,22 +22,25 @@ import TelegramIcon from '@mui/icons-material/Telegram';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { SettingsToggle } from '@/components/SettingsToggle';
+import { useSettings } from '@/app/contexts/SettingsContext';
 
 const drawerWidth = 260;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const pathname = usePathname();
+    const { t } = useSettings();
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
     };
 
     const navItems = [
-        { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-        { text: 'AI Agents', icon: <SmartToyIcon />, path: '/dashboard/agents' },
-        { text: 'Workflows', icon: <AccountTreeIcon />, path: '/dashboard/workflows' },
-        { text: 'Telegram', icon: <TelegramIcon />, path: '/dashboard/telegram' },
+        { text: t.common.dashboard, icon: <DashboardIcon />, path: '/dashboard' },
+        { text: t.common.agents, icon: <SmartToyIcon />, path: '/dashboard/agents' },
+        { text: t.common.workflows, icon: <AccountTreeIcon />, path: '/dashboard/workflows' },
+        { text: t.common.telegram, icon: <TelegramIcon />, path: '/dashboard/telegram' },
     ];
 
     const drawer = (
@@ -104,6 +107,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <MenuIcon />
                     </IconButton>
                     <Box sx={{ flexGrow: 1 }} />
+                    <SettingsToggle />
                 </Toolbar>
             </AppBar>
 

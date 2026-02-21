@@ -3,7 +3,6 @@ import {
     Box,
     Typography,
     Button,
-    Grid,
     Card,
     CardContent,
     CardActions,
@@ -56,9 +55,9 @@ export default async function AgentsPage() {
                     </Button>
                 </Card>
             ) : (
-                <Grid container spacing={3}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}>
                     {agents.map((agent) => (
-                        <Grid item xs={12} sm={6} md={4} key={agent.id}>
+                        <Box key={agent.id}>
                             <Card sx={{
                                 height: '100%',
                                 display: 'flex',
@@ -102,9 +101,9 @@ export default async function AgentsPage() {
                                     </IconButton>
                                 </CardActions>
                             </Card>
-                        </Grid>
+                        </Box>
                     ))}
-                </Grid>
+                </Box>
             )}
         </Box>
     );
