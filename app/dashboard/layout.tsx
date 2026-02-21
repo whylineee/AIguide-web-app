@@ -31,6 +31,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SettingsToggle } from '@/components/SettingsToggle';
 import { useSettings } from '@/app/contexts/SettingsContext';
+import { createClient } from '@/lib/supabase/client';
 
 const drawerWidth = 260;
 
@@ -39,8 +40,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const { t } = useSettings();
 
-    const handleLogout = () => {
-        document.cookie = "test_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    const handleLogout = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
         window.location.href = '/login';
     };
 
