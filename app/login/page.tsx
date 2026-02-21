@@ -12,6 +12,7 @@ import { SettingsToggle } from '@/components/SettingsToggle';
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const supabase = createClient();
@@ -20,35 +21,27 @@ export default function LoginPage() {
     const handleOAuthLogin = async (provider: 'google' | 'linkedin_oidc' | 'github') => {
         setLoading(true);
         setError(null);
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider,
-            options: {
-                redirectTo: `${window.location.origin}/dashboard`,
-            },
-        });
 
-        if (error) {
-            setError(error.message);
-            setLoading(false);
-        }
+        // Mock Auth
+        setTimeout(() => {
+            document.cookie = "test_auth=true; path=/;";
+            window.location.href = '/dashboard';
+        }, 1000);
     };
 
-    const handleEmailLogin = async (e: React.FormEvent) => {
+    const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
-
-        if (error) {
-            setError(error.message);
-            setLoading(false);
-        } else {
+        // Mock Auth
+        setTimeout(() => {
+            if (!isLogin) {
+                alert("Account created successfully. You are now logged in with test account.");
+            }
+            document.cookie = "test_auth=true; path=/;";
             window.location.href = '/dashboard';
-        }
+        }, 1000);
     };
 
     return (
@@ -105,11 +98,40 @@ export default function LoginPage() {
                     background: 'transparent',
                     border: 'none',
                 }}>
+                    <Box sx={{ width: '100%', mb: 4, display: 'flex', justifyContent: 'center' }}>
+                        <Box sx={{ display: 'flex', bgcolor: 'background.paper', borderRadius: 2, p: 0.5 }}>
+                            <Button
+                                onClick={() => setIsLogin(true)}
+                                sx={{
+                                    px: 4, py: 1,
+                                    borderRadius: 1.5,
+                                    bgcolor: isLogin ? 'primary.main' : 'transparent',
+                                    color: isLogin ? '#fff' : 'text.secondary',
+                                    '&:hover': { bgcolor: isLogin ? 'primary.main' : 'action.hover' }
+                                }}
+                            >
+                                {t.auth.loginTab}
+                            </Button>
+                            <Button
+                                onClick={() => setIsLogin(false)}
+                                sx={{
+                                    px: 4, py: 1,
+                                    borderRadius: 1.5,
+                                    bgcolor: !isLogin ? 'primary.main' : 'transparent',
+                                    color: !isLogin ? '#fff' : 'text.secondary',
+                                    '&:hover': { bgcolor: !isLogin ? 'primary.main' : 'action.hover' }
+                                }}
+                            >
+                                {t.auth.registerTab}
+                            </Button>
+                        </Box>
+                    </Box>
+
                     <Typography component="h1" variant="h4" fontWeight="bold" gutterBottom>
-                        {t.auth.welcome}
+                        {isLogin ? t.auth.welcome : t.auth.registerTab}
                     </Typography>
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 4, textAlign: 'center' }}>
-                        {t.auth.signInToAccess}
+                        {isLogin ? t.auth.signInToAccess : t.auth.signUpToAccess}
                     </Typography>
 
                     {error && <Alert severity="error" sx={{ width: '100%', mb: 3 }}>{error}</Alert>}
@@ -121,21 +143,9 @@ export default function LoginPage() {
                         startIcon={<GoogleIcon sx={{ color: '#DB4437' }} />}
                         onClick={() => handleOAuthLogin('google')}
                         disabled={loading}
-                        sx={{ mb: 2, justifyContent: 'flex-start', px: 3, py: 1.5, borderColor: 'rgba(255,255,255,0.2)', color: 'text.primary' }}
+                        sx={{ mb: 2, justifyContent: 'flex-start', px: 3, py: 1.5, borderColor: 'divider', color: 'text.primary' }}
                     >
                         {t.auth.continueWith} Google
-                    </Button>
-
-                    <Button
-                        fullWidth
-                        variant="outlined"
-                        size="large"
-                        startIcon={<LinkedInIcon sx={{ color: '#0077b5' }} />}
-                        onClick={() => handleOAuthLogin('linkedin_oidc')}
-                        disabled={loading}
-                        sx={{ mb: 2, justifyContent: 'flex-start', px: 3, py: 1.5, borderColor: 'rgba(255,255,255,0.2)', color: 'text.primary' }}
-                    >
-                        {t.auth.continueWith} LinkedIn
                     </Button>
 
                     <Button
@@ -145,14 +155,14 @@ export default function LoginPage() {
                         startIcon={<GitHubIcon />}
                         onClick={() => handleOAuthLogin('github')}
                         disabled={loading}
-                        sx={{ mb: 3, justifyContent: 'flex-start', px: 3, py: 1.5, borderColor: 'rgba(255,255,255,0.2)', color: 'text.primary' }}
+                        sx={{ mb: 3, justifyContent: 'flex-start', px: 3, py: 1.5, borderColor: 'divider', color: 'text.primary' }}
                     >
                         {t.auth.continueWith} GitHub
                     </Button>
 
                     <Divider sx={{ width: '100%', mb: 3, typography: 'body2', color: 'text.secondary' }}>{t.auth.or}</Divider>
 
-                    <Box component="form" onSubmit={handleEmailLogin} sx={{ width: '100%' }}>
+                    <Box component="form" onSubmit={handleEmailAuth} sx={{ width: '100%' }}>
                         <TextField
                             margin="normal"
                             required
@@ -173,7 +183,7 @@ export default function LoginPage() {
                             label={t.auth.password}
                             type="password"
                             id="password"
-                            autoComplete="current-password"
+                            autoComplete={isLogin ? "current-password" : "new-password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
@@ -185,9 +195,9 @@ export default function LoginPage() {
                             variant="contained"
                             size="large"
                             disabled={loading}
-                            sx={{ mt: 4, mb: 2, py: 1.5, background: 'linear-gradient(45deg, #7C3AED 30%, #5B21B6 90%)', border: 0 }}
+                            sx={{ mt: 4, py: 1.5, background: 'linear-gradient(45deg, #7C3AED 30%, #5B21B6 90%)', border: 0 }}
                         >
-                            {loading ? <CircularProgress size={24} color="inherit" /> : t.auth.loginBtn}
+                            {loading ? <CircularProgress size={24} color="inherit" /> : (isLogin ? t.auth.loginBtn : t.auth.registerBtn)}
                         </Button>
                     </Box>
                 </Paper>

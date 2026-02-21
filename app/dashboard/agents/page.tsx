@@ -17,13 +17,14 @@ import { createClient } from '@/lib/supabase/server';
 
 export default async function AgentsPage() {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // const { data: { user } } = await supabase.auth.getUser();
 
-    const { data: agents } = await supabase
-        .from('agents')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+    // Mock data until real Supabase is connected
+    const agents = [
+        { id: '1', name: 'Customer Support Bot', type: 'support', status: 'active', model: 'gpt-4', created_at: new Date().toISOString() },
+        { id: '2', name: 'Data Analyzer', type: 'analytics', status: 'offline', model: 'gpt-3.5-turbo', created_at: new Date().toISOString() },
+        { id: '3', name: 'Email Assistant', type: 'automation', status: 'active', model: 'gpt-4-turbo', created_at: new Date().toISOString() },
+    ];
 
     return (
         <Box>

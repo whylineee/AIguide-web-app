@@ -30,19 +30,18 @@ export async function proxy(request: NextRequest) {
         }
     )
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
+    // Mock Authentication Logic
+    const isAuthenticated = request.cookies.get('test_auth')?.value === 'true'
 
     const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
 
-    if (isDashboard && !user) {
+    if (isDashboard && !isAuthenticated) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)
     }
 
-    if (request.nextUrl.pathname === '/login' && user) {
+    if (request.nextUrl.pathname === '/login' && isAuthenticated) {
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)

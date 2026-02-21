@@ -47,16 +47,15 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const t = language === 'en' ? en : uk;
     const theme = getTheme(mode);
 
-    // Prevent flash of incorrect theme before hydration
-    if (!mounted) {
-        return <div style={{ visibility: 'hidden' }}>{children}</div>;
-    }
-
     return (
         <SettingsContext.Provider value={{ language, setLanguage, mode, setMode, t }}>
             <ThemeProvider theme={theme}>
                 <CssBaseline />
-                {children}
+                {!mounted ? (
+                    <div style={{ visibility: 'hidden' }}>{children}</div>
+                ) : (
+                    children
+                )}
             </ThemeProvider>
         </SettingsContext.Provider>
     );

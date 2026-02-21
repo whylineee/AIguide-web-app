@@ -24,6 +24,12 @@ export const en = {
         email: "Email Address",
         password: "Password",
         loginBtn: "Log In & Start Building",
+        registerBtn: "Create Account",
+        noAccount: "Don't have an account?",
+        haveAccount: "Already have an account?",
+        signUpToAccess: "Create an account to build AI Agents",
+        loginTab: "Log In",
+        registerTab: "Sign Up",
         heroTitle: "Build AI Agents. Automate Workflows.",
         heroSubtitle: "The ultimate premium SaaS control panel designed for managing everything seamlessly with Supabase & Next.js."
     },

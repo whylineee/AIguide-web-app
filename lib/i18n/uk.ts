@@ -24,6 +24,12 @@ export const uk = {
         email: "Електронна пошта",
         password: "Пароль",
         loginBtn: "Увійти та почати роботу",
+        registerBtn: "Створити акаунт",
+        noAccount: "Немає акаунту?",
+        haveAccount: "Вже є акаунт?",
+        signUpToAccess: "Створіть акаунт, щоб створювати ШІ Агентів",
+        loginTab: "Вхід",
+        registerTab: "Реєстрація",
         heroTitle: "Створюйте ШІ Агентів. Автоматизуйте процеси.",
         heroSubtitle: "Преміальна SaaS панель керування, створена для безперебійного управління за допомогою Supabase та Next.js."
     },
