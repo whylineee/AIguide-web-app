@@ -14,6 +14,7 @@ import {
     Toolbar,
     IconButton,
     Divider,
+    Button,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -21,7 +22,11 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import KeyIcon from '@mui/icons-material/Key';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import HistoryIcon from '@mui/icons-material/History';
 import SettingsIcon from '@mui/icons-material/Settings';
+import LogoutIcon from '@mui/icons-material/Logout';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SettingsToggle } from '@/components/SettingsToggle';
@@ -34,56 +39,99 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const { t } = useSettings();
 
+    const handleLogout = () => {
+        document.cookie = "test_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.href = '/login';
+    };
+
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
     };
 
-    const navItems = [
+    const mainNavItems = [
         { text: t.common.dashboard, icon: <DashboardIcon />, path: '/dashboard' },
         { text: t.common.agents, icon: <SmartToyIcon />, path: '/dashboard/agents' },
         { text: t.common.teams, icon: <GroupsIcon />, path: '/dashboard/teams' },
         { text: t.common.workflows, icon: <AccountTreeIcon />, path: '/dashboard/workflows' },
+    ];
+
+    const toolsNavItems = [
         { text: t.common.telegram, icon: <TelegramIcon />, path: '/dashboard/telegram' },
+        { text: t.common.apikeys, icon: <KeyIcon />, path: '/dashboard/apikeys' },
+        { text: t.common.logs, icon: <HistoryIcon />, path: '/dashboard/logs' },
+    ];
+
+    const bottomNavItems = [
+        { text: t.common.billing, icon: <ReceiptIcon />, path: '/dashboard/billing' },
         { text: t.common.settings, icon: <SettingsIcon />, path: '/dashboard/settings' },
     ];
 
-    const drawer = (
-        <Box sx={{ bgcolor: 'background.paper', height: '100%' }}>
-            <Toolbar sx={{ justifyContent: 'center' }}>
-                <Typography variant="h6" color="primary" fontWeight="bold">
-                    AI Control Panel
-                </Typography>
-            </Toolbar>
-            <Divider />
-            <List sx={{ mt: 2, px: 2 }}>
-                {navItems.map((item) => {
-                    const isActive = pathname === item.path || pathname.startsWith(item.path + '/');
+    const renderNavGroup = (items: any[], label: string) => (
+        <Box sx={{ mb: 2 }}>
+            <Typography variant="overline" color="text.secondary" sx={{ px: 3, fontWeight: 'bold', letterSpacing: 1 }}>
+                {label}
+            </Typography>
+            <List sx={{ px: 2 }}>
+                {items.map((item) => {
+                    const isActive = pathname === item.path || (item.path !== '/dashboard' && pathname.startsWith(item.path + '/'));
                     return (
-                        <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
+                        <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
                             <ListItemButton
                                 component={Link}
                                 href={item.path}
                                 sx={{
                                     borderRadius: 2,
-                                    bgcolor: isActive ? 'primary.main' : 'transparent',
+                                    bgcolor: isActive ? 'action.selected' : 'transparent',
                                     color: isActive ? 'primary.contrastText' : 'text.primary',
                                     '&:hover': {
-                                        bgcolor: isActive ? 'primary.dark' : 'action.hover',
+                                        bgcolor: isActive ? 'action.selected' : 'action.hover',
                                     },
                                 }}
                             >
-                                <ListItemIcon sx={{
-                                    color: isActive ? 'primary.contrastText' : 'text.secondary',
-                                    minWidth: 40
-                                }}>
+                                <ListItemIcon sx={{ color: isActive ? 'primary.main' : 'text.secondary', minWidth: 40 }}>
                                     {item.icon}
                                 </ListItemIcon>
-                                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: isActive ? 600 : 500 }} />
+                                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: isActive ? 700 : 500 }} />
                             </ListItemButton>
                         </ListItem>
                     );
                 })}
             </List>
+        </Box>
+    );
+
+    const drawer = (
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'transparent' }}>
+            <Toolbar sx={{ justifyContent: 'center', py: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 32, height: 32, borderRadius: 2, background: 'linear-gradient(45deg, #7C3AED, #3B82F6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+                        AI
+                    </Box>
+                    <Typography variant="h6" fontWeight="900" sx={{ letterSpacing: -0.5 }}>
+                        GuidePlatform
+                    </Typography>
+                </Box>
+            </Toolbar>
+
+            <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+                {renderNavGroup(mainNavItems, 'Main')}
+                {renderNavGroup(toolsNavItems, 'Integrations & Tools')}
+            </Box>
+
+            <Box sx={{ p: 2, mt: 'auto' }}>
+                {renderNavGroup(bottomNavItems, '')}
+                <Divider sx={{ mb: 2 }} />
+                <Button
+                    fullWidth
+                    variant="text"
+                    color="error"
+                    startIcon={<LogoutIcon />}
+                    onClick={handleLogout}
+                    sx={{ justifyContent: 'flex-start', px: 2, py: 1.5, borderRadius: 2 }}
+                >
+                    {t.common.logout}
+                </Button>
+            </Box>
         </Box>
     );
 
