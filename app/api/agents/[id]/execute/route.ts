@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(
     request: Request,
@@ -44,6 +43,7 @@ export async function POST(
             .single();
 
         // Виклик LLM
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'dummy-key' });
         const completion = await openai.chat.completions.create({
             model: agent.model || 'gpt-3.5-turbo',
             temperature: agent.temperature || 0.7,
